@@ -1,36 +1,60 @@
-#================================================================================
-# OxCalc.rogue
-# April 2, 2024
-#================================================================================
+module OxCalc
 
-$define VERSION "1.0"
-$define DATE    "April 2, 2024"
-
-$requireRogue "2.34"
-
+$include "Scanner.rogue"
+$include "Parser.rogue" [optional]
+uses OxCalc
 uses Console/CommandLineParser
 
 try
   OxCalc( System.command_line_arguments )
+catch (error:CompileError)
+  Console.error.println error
+  System.exit 1
 catch (error:Error)
   Console.error.println error
+  Console.error.println error.stack_trace
   System.exit 1
 endTry
 
 class OxCalc
+  PROPERTIES
+    command : Variant
+
   METHODS
     method init( args:String[] )
-      local command = parse_args( args )
+      command = parse_args( args )
 
-      trace command
+      # trace command
       # has //options and possibly //args
 
-      if (command//options//help)
+      if (command//options//help or command//args.count == 0)
         print_usage
         System.exit 0
       endIf
 
+      if ($isDefined(PARSER_EXISTS)) parse_files
+      else                           scan_files
+
+    method scan_files
+      forEach (arg in command//args)
+        local filepath = arg->String
+        local scanner = Scanner( File(filepath) )
+        local tokens = scanner.tokenize
+        println (forEach in tokens)
+      endForEach
+
+    method parse_files
+      if ($isDefined(PARSER_EXISTS))
+        forEach (arg in command//args)
+          local filepath = arg->String
+          local parser = Parser( File(filepath) )
+          local ast = parser.parse
+          @trace ast
+        endForEach
+      endIf
+
     method parse_args( args:String[] )->Variant
+      # This method is unrelated to the Froley Parser
       local command = CommandLineParser().
       [
         option( "--flag",     &alias="-f" )
@@ -40,12 +64,8 @@ class OxCalc
       return command
 
     method print_usage
-      println "OxCalc v$"(VERSION)
-      println "$"(DATE)
-      println
-
       println @|USAGE
-               |  oxcalc [OPTIONS]
+               |  oxcalc [OPTIONS] <filepath>
                |
                |OPTIONS
                |  --help, -h, -?

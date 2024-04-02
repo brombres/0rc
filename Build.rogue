@@ -7,7 +7,7 @@ $requireRogue "2.34"
 uses Utility/VersionNumber
 
 augment Build
-  # You can create a Local.rogo file with overrides for these values, e.g.:
+  # You can create a Local.settings file with overrides for these values, e.g.:
   # BUILD_MODE = release
   PROPERTIES
     PROJECT          = "OxCalc"
@@ -33,7 +33,7 @@ endRoutine
 
 routine rogo_run
   # Runs this project.
-  execute exe_file.esc
+  execute "$ Test.$" (exe_file.esc,Build.LAUNCHER_NAME)
 endRoutine
 
 routine rogo_debug
@@ -56,6 +56,12 @@ endRoutine
 
 routine rogo_build
   # Recompiles Rogue -> C -> Exe if needed. 'rogo rebuild' forces a build.
+  localize exe_file
+
+  if (File("Source/$.froley"(Build.PROJECT)).is_newer_than(exe_file))
+    rogo_froley
+  endIf
+
   local source_files = Files( "Source", "**/*.rogue" )
   if (source_files.any_newer_than(exe_file))
     local c_filepath = "Build/$-$.c" (Build.PROJECT,System.os)
@@ -64,6 +70,11 @@ routine rogo_build
     endIf
     compile_c
   endIf
+endRoutine
+
+routine rogo_froley
+  local froley_src = File( "Source/$.froley"(Build.PROJECT) )
+  execute "froley --main $ Source"(froley_src.esc)
 endRoutine
 
 routine rogo_build_debug
@@ -78,6 +89,7 @@ endRoutine
 
 routine rogo_rebuild
   # Force-rebuilds project.
+  rogo_froley
   compile_rogue
   compile_c
 endRoutine
@@ -175,7 +187,6 @@ endRoutine
 
 routine rogo_update_version( version:String )
   # Updates the version number and date in the project source and README.md.
-  if (not version) version = ""
   version .= after_any("v")
   localize current_version
   if (version.count == 0) throw Error( "New version number expected, e.g. '1.0.2'. Current version: $"(current_version) )
@@ -183,7 +194,7 @@ routine rogo_update_version( version:String )
     error.println( "[WARNING] The new version number ($) is not higher than the current version number ($)."(version,current_version) )
   endIf
 
-  block file = File( "Source/OxCalc.rogue" )
+  block file = File( "Source/PROJECT_NAME.rogue" )
     if (file.exists)
       local og_content = String(file)
       local content = og_content
@@ -306,8 +317,13 @@ routine compile_rogue
   local cmd = "roguec $ $ --main --output=$ $"...
               (File(src_filepath).esc,flags,File(c_filepath).esc,targets)
   println "> " + cmd
-  local error = System.run( cmd )
-  if (error) throw Error( "Build failed." )
+  local status = Process.run( cmd, &env )
+  local result = status->String
+  println result
+  if (not status.success) throw Error( "Build failed." )
+  if (result.contains("ROGO:"))
+    System.exit( execute("rogo".appending(System.command_line_arguments.join(' '))) )
+  endIf
 endRoutine
 
 routine compile_c
@@ -390,7 +406,7 @@ endRoutine
 # routine calls.
 
 # Example: to handle the command "rogo abc xyz 5", define
-# "routine rogo_abc_xyz( n:Int32 )".
+# "routine rogo_abc_xyz( n:Int )".
 
 # "rogo_default" will run in the absence of any other command line argument.
 
@@ -420,18 +436,8 @@ endRoutine
 #   DEPENDENCIES = Library/Rogue/**/*.rogue
 #
 #   LIBRARIES    = name(package)
-#   LIBRARIES    = name(
-#                    exe:<which-name>
-#                    exists-cmd:<exists-cmd>
-#                    flags:<library-flags>
-#                    ignore-exe-only:<setting>
-#                    info:<info-name>
-#                    info-cmd:<get-info-cmd>
-#                    install:<install-name>
-#                    install-cmd:<install-cmd>
-#                    link:<setting>
-#                    package:<package-name>
-#                  )
+#   LIBRARIES    = name(package:<package> install:<install-cmd>
+#                  link:<link-flags> which:<which-name>)
 #
 # The following macro is replaced within this file (Build.rogue) - the libraries
 # should normally also be declared in #$ LIBRARIES:
@@ -469,7 +475,7 @@ class Build [singleton]
     rogo_args           = @[]
     rogo_error          : Error
 
-    LOCAL_SETTINGS_FILE = "Local.rogo"
+    LOCAL_SETTINGS_FILE = "Local.settings"
 
   METHODS
     method launch
@@ -500,7 +506,7 @@ class Build [singleton]
     method on_error
       local w = Console.width.or_smaller( 80 )
       Console.error.println "=" * w
-      Console.error.println rogo_error->String.word_wrapped(w)
+      Console.error.println rogo_error
       Console.error.println "=" * w
       on_exit
       System.exit 1
@@ -552,20 +558,15 @@ class Build [singleton]
       read_defs( LOCAL_SETTINGS_FILE )
 
     method read_defs( defs_filepath:String )
-      # Attempt to read defs from Local.rogo
+      # Attempt to read defs from Local.settings
       local overrides = String[]
       if (File(defs_filepath).exists)
         forEach (line in LineReader(File(defs_filepath)))
           if (line.contains("="))
             local name  = line.before_first('=').trimmed
-            local rhs   = line.after_first('=').trimmed
-            local value : Variant
-            if (rhs.begins_with('"') or rhs.begins_with('\''))
-              value = rhs.leftmost(-1).rightmost(-1)
-            elseIf (rhs.begins_with('{') or rhs.begins_with('['))
-              value = JSON.parse( rhs )
-            else
-              value = rhs
+            local value = line.after_first('=').trimmed
+            if (value.begins_with('"') or value.begins_with('\''))
+              value = value.leftmost(-1).rightmost(-1)
             endIf
             local p = <<Build>>.find_property( name )
             if (p)
@@ -598,7 +599,6 @@ routine rogo_help( command="":String )
     endIf
     local description = get_description( command )
     if (description)
-      description .= replacing("<br>","\n")
       local max_w = Console.width - 2
       println "DESCRIPTION"
       forEach (line in LineReader(description.word_wrapped(max_w)))
@@ -638,16 +638,16 @@ routine rogo_help( command="":String )
   forEach (entry in entries)
     print "  " + entry.syntax
     if (entry.@description)
-      local description = entry.@description.before_first( '\n' )
+      local description = entry.@description
       loop (max_len - entry.syntax.count) print ' '
       contingent
-        sufficient (2 + max_len + description.count <= max_w)
+        sufficient (max_len + description.count <= max_w)
         if (description.contains(". "))
           description = description.before_first( ". " ) + "."
           sufficient (max_len + description.count <= max_w)
         endIf
         necessary (max_len + 10 <= max_w)
-        description = description.unright( (description.count - (max_w - max_len))+5 ) + "..."
+        description = description.unright( (description.count - (max_w - max_len))+3 ) + "..."
       satisfied
         print description
       endContingent
