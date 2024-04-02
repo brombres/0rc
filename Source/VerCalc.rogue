@@ -1,0 +1,53 @@
+#================================================================================
+# VerCalc.rogue
+# April 2, 2024
+#================================================================================
+
+$define VERSION "1.0"
+$define DATE    "April 2, 2024"
+
+$requireRogue "2.34"
+
+uses Console/CommandLineParser
+
+try
+  VerCalc( System.command_line_arguments )
+catch (error:Error)
+  Console.error.println error
+  System.exit 1
+endTry
+
+class VerCalc
+  METHODS
+    method init( args:String[] )
+      local command = parse_args( args )
+
+      trace command
+      # has //options and possibly //args
+
+      if (command//options//help)
+        print_usage
+        System.exit 0
+      endIf
+
+    method parse_args( args:String[] )->Variant
+      local command = CommandLineParser().
+      [
+        option( "--flag",     &alias="-f" )
+        option( "--help",     &aliases=["-h","-?"] )
+        option( "--setting=", &alias="-s" )
+      ].parse( args )
+      return command
+
+    method print_usage
+      println "VerCalc v$"(VERSION)
+      println "$"(DATE)
+      println
+
+      println @|USAGE
+               |  vercalc [OPTIONS]
+               |
+               |OPTIONS
+               |  --help, -h, -?
+               |    Show this help text.
+endClass
