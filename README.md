@@ -1,4 +1,4 @@
-# VerCalc
+# 0xCalc
 Versatile Command Line Calculator
 
 About     | Current Release

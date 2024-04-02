@@ -10,8 +10,8 @@ augment Build
   # You can create a Local.rogo file with overrides for these values, e.g.:
   # BUILD_MODE = release
   PROPERTIES
-    PROJECT          = "VerCalc"
-    LAUNCHER_NAME    = PROJECT.to_lowercase : String
+    PROJECT          = "OxCalc"
+    LAUNCHER_NAME    = "0x"
 
     BUILD_MODE       = "debug"  # set to "debug" or "release"
     LAUNCHER_FOLDER  = "/usr/local/bin"
@@ -27,7 +27,7 @@ endAugment
 routine rogo_default
   # Builds and runs this project - equivalent to 'rogo build && rogo run'.
   rogo_build
-  #rogo_install  # Uncomment to automatically install a /usr/local/bin/vercalc launcher
+  #rogo_install  # Uncomment to automatically install a /usr/local/bin/0x launcher
   rogo_run
 endRoutine
 
@@ -183,7 +183,7 @@ routine rogo_update_version( version:String )
     error.println( "[WARNING] The new version number ($) is not higher than the current version number ($)."(version,current_version) )
   endIf
 
-  block file = File( "Source/VerCalc.rogue" )
+  block file = File( "Source/OxCalc.rogue" )
     if (file.exists)
       local og_content = String(file)
       local content = og_content

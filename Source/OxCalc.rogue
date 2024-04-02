@@ -1,5 +1,5 @@
 #================================================================================
-# VerCalc.rogue
+# OxCalc.rogue
 # April 2, 2024
 #================================================================================
 
@@ -11,13 +11,13 @@ $requireRogue "2.34"
 uses Console/CommandLineParser
 
 try
-  VerCalc( System.command_line_arguments )
+  OxCalc( System.command_line_arguments )
 catch (error:Error)
   Console.error.println error
   System.exit 1
 endTry
 
-class VerCalc
+class OxCalc
   METHODS
     method init( args:String[] )
       local command = parse_args( args )
@@ -40,12 +40,12 @@ class VerCalc
       return command
 
     method print_usage
-      println "VerCalc v$"(VERSION)
+      println "OxCalc v$"(VERSION)
       println "$"(DATE)
       println
 
       println @|USAGE
-               |  vercalc [OPTIONS]
+               |  oxcalc [OPTIONS]
                |
                |OPTIONS
                |  --help, -h, -?
