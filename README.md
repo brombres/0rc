@@ -1,5 +1,5 @@
-# 0xCalc
-Versatile Command Line Calculator
+# 0rc
+Omni-purpose RPN Calculator
 
 About     | Current Release
 ----------|-----------------------
