@@ -1,2 +1,4 @@
-# VerCalc
-Versatile Command Line Calculator
+# 0rc
+Omni-purpose RPN Calculator
+
+In development.
