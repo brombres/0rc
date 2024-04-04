@@ -1,4 +1,4 @@
-println "OxCalc Test"
+println "Orc Test"
 
 inches = 12
 cm = inches * 2.54
