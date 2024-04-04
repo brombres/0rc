@@ -194,22 +194,6 @@ class Binary( t, left:Cmd, right:Cmd ) : Cmd
       return "Binary($,$)"(%left,%right)
 endClass
 
-class AST : Cmd
-  PROPERTIES
-    statements : Cmd
-
-  METHODS
-    method init( t, statements )
-
-    method init( existing:AST )
-      prior.init( existing )
-      if (existing.statements) statements = existing.statements.cloned
-
-    method description->String
-      return "AST($)" (%statements)
-
-endClass
-
 class Access : Cmd
   PROPERTIES
     name : String
@@ -260,6 +244,49 @@ class Divide : Binary
 
 endClass
 
+class LiteralInteger : Cmd
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( t, value )
+
+    method init( existing:LiteralInteger )
+      prior.init( existing )
+      value = existing.value
+
+    method description->String
+      return "LiteralInteger($)" (%value)
+
+    method to->Character
+      return Cmd.to_character(value)
+
+    method to->Int:     return value
+    method to->Logical: return value?
+    method to->String: return value
+
+endClass
+
+class LiteralReal : Cmd
+  PROPERTIES
+    value : Real
+
+  METHODS
+    method init( t, value )
+
+    method init( existing:LiteralReal )
+      prior.init( existing )
+      value = existing.value
+
+    method description->String
+      return "LiteralReal($)" (%value)
+
+    method to->Int:    return value
+    method to->Real:   return value
+    method to->String: return value
+
+endClass
+
 class LiteralString : Cmd
   PROPERTIES
     value : String
@@ -297,26 +324,6 @@ class Negate : Unary
 
 endClass
 
-class Number : Cmd
-  PROPERTIES
-    value : Real
-
-  METHODS
-    method init( t, value )
-
-    method init( existing:Number )
-      prior.init( existing )
-      value = existing.value
-
-    method description->String
-      return "Number($)" (%value)
-
-    method to->Int:    return value
-    method to->Real:   return value
-    method to->String: return value
-
-endClass
-
 class Print : Cmd
   PROPERTIES
     args : Cmd
@@ -350,5 +357,24 @@ class Subtract : Binary
   METHODS
     method description->String
       return "Subtract($,$)" (%left,%right)
+
+endClass
+
+class LiteralInt : Cmd
+  PROPERTIES
+    value : Int
+
+  METHODS
+    method init( t, value )
+
+    method init( existing:LiteralInt )
+      prior.init( existing )
+      value = existing.value
+
+    method description->String
+      return "LiteralInt($)" (%value)
+
+    method to->Int:       return value
+    method to->String:    return value
 
 endClass

@@ -1,0 +1,18 @@
+module OxCalc
+
+augment
+  METHODS
+    method Cmd.execute->OxObject
+      throw t.error( "[INTERNAL] $.execute() is undefined."(type_name) )
+
+    method LiteralInt.execute->OxObject
+      return OxInt( value )
+
+    method Statements.execute->OxObject
+      local result = OxUndefined : OxObject
+      forEach (statement in this)
+        result = statement.execute
+      endForEach
+      return result
+
+endAugment

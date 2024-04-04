@@ -7,7 +7,8 @@ tokens
 --------------------------------------------------------------------------------
 EOL(end of line)
 IDENTIFIER identifier [content]
-NUMBER     number     [content]
+INTEGER    integer    [content]
+REAL       real       [content]
 STRING     string     [content]
 
 --------------------------------------------------------------------------------
@@ -67,10 +68,10 @@ scanner
   if (scan [0-9])
     scan_integer  # First character is now in 'buffer'
     if (scan '.') scan_integer
-    produce NUMBER
+    produce INTEGER
   elseIf (scan '.')
     scan_integer
-    produce NUMBER
+    produce REAL
   else
     return
   endIf
@@ -91,10 +92,6 @@ scanner
 --------------------------------------------------------------------------------
 parser
 --------------------------------------------------------------------------------
-- ast
-  statements
-  produce AST(statements)
-
 - statements
   consume_eols
 
@@ -142,6 +139,10 @@ parser
 - term
   on '(' expression ')': return
   on IDENTIFIER -> Access(name=content)
-  on NUMBER     -> Number(value=content:Real)
+  on INTEGER    -> LiteralInteger(value=content)
+  on REAL       -> LiteralReal(value=content:Real)
   on STRING     -> LiteralString(value=content)
   syntaxError
+
+- additional_nodes
+  create LiteralInt( value:Int )

@@ -1,0 +1,19 @@
+module OxCalc
+
+class OxObject
+  METHODS
+    method is_undefined->Logical
+      return false
+endClass
+
+class OxInt( value:Int ) : OxObject
+  METHODS
+    method description->String
+      return value->String
+endClass
+
+class OxUndefined : OxObject [singleton]
+  METHODS
+    method is_undefined->Logical
+      return true
+endClass

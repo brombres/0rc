@@ -1,8 +1,12 @@
 module OxCalc
 
-$include "Scanner.rogue"
-$include "Parser.rogue" [optional]
-uses OxCalc
+$include CmdExecute
+$include OxObject
+$include Parser  [optional]
+$include Resolver
+$include Scanner
+$include Visitor
+
 uses Console/CommandLineParser
 
 try
@@ -32,16 +36,7 @@ class OxCalc
         System.exit 0
       endIf
 
-      if ($isDefined(PARSER_EXISTS)) parse_files
-      else                           scan_files
-
-    method scan_files
-      forEach (arg in command//args)
-        local filepath = arg->String
-        local scanner = Scanner( File(filepath) )
-        local tokens = scanner.tokenize
-        println (forEach in tokens)
-      endForEach
+      repl
 
     method parse_files
       if ($isDefined(PARSER_EXISTS))
@@ -52,6 +47,31 @@ class OxCalc
           @trace ast
         endForEach
       endIf
+
+    method repl
+      println "0x Calculator"
+      println "Commands include (h)elp and (q)uit."
+      local index = 1
+      loop
+        local input = Console.input( "$> "(("#"+index).justified(5)) )
+        if (not input or input == "quit" or input == "q") escapeLoop
+        if (input == "") nextIteration
+
+        local parser = Parser( "<$>"(index.format("4")), input )
+        try
+          local statements = parser.parse
+          Resolver.visit( statements )
+          local result = statements.execute
+          if (not result.is_undefined)
+            print   "       "
+            println %result
+          endIf
+        catch (error:CompileError)
+          println "ERROR: " + error.message
+        endTry
+
+        ++index
+      endLoop
 
     method parse_args( args:String[] )->Variant
       # This method is unrelated to the Froley Parser
@@ -65,7 +85,7 @@ class OxCalc
 
     method print_usage
       println @|USAGE
-               |  oxcalc [OPTIONS] <filepath>
+               |  0x [OPTIONS] <filepath>
                |
                |OPTIONS
                |  --help, -h, -?

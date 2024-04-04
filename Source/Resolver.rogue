@@ -1,0 +1,7 @@
+module OxCalc
+
+class Resolver : Visitor [singleton]
+  METHODS
+    method on_visit( cmd:LiteralInteger )->Cmd
+      return LiteralInt( cmd.t, cmd.value->Int )
+endClass

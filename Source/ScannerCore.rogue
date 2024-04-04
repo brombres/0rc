@@ -281,11 +281,11 @@ class ScannerCore [abstract]
         if (_scan('.'))
           if (not r_scan_integer) return false
         endIf
-        _add( TokenType.NUMBER )
+        _add( TokenType.INTEGER )
         return false
       elseIf (_scan('.'))
         if (not r_scan_integer) return false
-        _add( TokenType.NUMBER )
+        _add( TokenType.REAL )
         return false
       else
         return true

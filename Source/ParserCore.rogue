@@ -9,19 +9,19 @@ $include "Visitor.rogue"
 
 class ParserCore [abstract]
   DEFINITIONS
-    ip_ast = 0
-    ip_statements = 1
-    ip_statement = 2
-    ip_consume_eols = 3
-    ip_arg_list = 4
-    ip_expression = 5
-    ip_assign = 6
-    ip_add_subtract = 7
-    ip_add_subtract__inner = 8
-    ip_multiply_divide = 9
-    ip_multiply_divide__inner = 10
-    ip_negate = 11
-    ip_term = 12
+    ip_statements = 0
+    ip_statement = 1
+    ip_consume_eols = 2
+    ip_arg_list = 3
+    ip_expression = 4
+    ip_assign = 5
+    ip_add_subtract = 6
+    ip_add_subtract__inner = 7
+    ip_multiply_divide = 8
+    ip_multiply_divide__inner = 9
+    ip_negate = 10
+    ip_term = 11
+    ip_additional_nodes = 12
 
   PROPERTIES
     _tokens          : Token[]
@@ -256,7 +256,6 @@ class ParserCore [abstract]
 
     method _execute( ip:Int )
       which (ip)
-        case ip_ast: r_ast
         case ip_statements: r_statements
         case ip_statement: r_statement
         case ip_consume_eols: r_consume_eols
@@ -269,16 +268,10 @@ class ParserCore [abstract]
         case ip_multiply_divide__inner: r_multiply_divide__inner
         case ip_negate: r_negate
         case ip_term: r_term
+        case ip_additional_nodes: r_additional_nodes
         others
           return
       endWhich
-
-    method r_ast
-      local _previous_cur_t = _cur_t
-      r_statements
-      if (not disable_output) _push( AST(_cur_t,_node_arg(-1)), 1 )
-      _cur_t = _previous_cur_t
-      return
 
     method r_statements
       local _previous_cur_t = _cur_t
@@ -441,9 +434,16 @@ class ParserCore [abstract]
           return
         endTemporarily
       endIf
-      if (_next_t.type == TokenType.NUMBER)
+      if (_next_t.type == TokenType.INTEGER)
         temporarily _cur_t = _on_t
-          if (not disable_output) _push( Number(_cur_t,_string_to_Real(_cur_t.content)), 0 )
+          if (not disable_output) _push( LiteralInteger(_cur_t,_cur_t.content), 0 )
+          _cur_t = _previous_cur_t
+          return
+        endTemporarily
+      endIf
+      if (_next_t.type == TokenType.REAL)
+        temporarily _cur_t = _on_t
+          if (not disable_output) _push( LiteralReal(_cur_t,_string_to_Real(_cur_t.content)), 0 )
           _cur_t = _previous_cur_t
           return
         endTemporarily
@@ -458,6 +458,11 @@ class ParserCore [abstract]
       _throw_syntax_error
       _cur_t = _previous_cur_t
       return
+      _cur_t = _previous_cur_t
+
+    method r_additional_nodes
+      local _previous_cur_t = _cur_t
+      if (not disable_output) _push( LiteralInt(_cur_t,_int_arg(-1)), 1 )
       _cur_t = _previous_cur_t
 
 endClass
