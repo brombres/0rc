@@ -2,14 +2,17 @@ module Orc
 
 augment
   METHODS
-    method Cmd.execute->OxObject
+    method Cmd.execute->OrcObject
       throw t.error( "[INTERNAL] $.execute() is undefined."(type_name) )
 
-    method LiteralInt.execute->OxObject
-      return OxInt( value )
+    method LiteralInt.execute->OrcObject
+      return OrcInt( value )
 
-    method Statements.execute->OxObject
-      local result = OxUndefined : OxObject
+    method Negate.execute->OrcObject
+      return -operand.execute
+
+    method Statements.execute->OrcObject
+      local result = OrcUndefined : OrcObject
       forEach (statement in this)
         result = statement.execute
       endForEach

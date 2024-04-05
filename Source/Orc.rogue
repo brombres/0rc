@@ -1,7 +1,7 @@
 module Orc
 
 $include CmdExecute
-$include OxObject
+$include OrcObject
 $include Parser  [optional]
 $include Resolver
 $include Scanner
@@ -10,7 +10,7 @@ $include Visitor
 uses Console/CommandLineParser
 
 try
-  Orc( System.command_line_arguments )
+  Orc.init( System.command_line_arguments )
 catch (error:CompileError)
   Console.error.println error
   System.exit 1
@@ -20,27 +20,55 @@ catch (error:Error)
   System.exit 1
 endTry
 
-class Orc
+class Orc [singleton]
   PROPERTIES
-    command : Variant
+    command_line  : Variant
+    command_index = 1
+
+    display_bits  : Int32
 
   METHODS
     method init( args:String[] )
-      command = parse_args( args )
+      command_line = parse_args( args )
 
-      # trace command
+      # trace command_line
       # has //options and possibly //args
 
-      if (command//options//help or command//args.count == 0)
+      if (command_line//options//help or command_line//args.count == 0)
         print_usage
         System.exit 0
       endIf
 
       repl
 
+    method display_bitwise( value:Int )
+      local n = value
+      local nbits : Int
+      if (n < 0) nbits = (n + 1).abs.minimum_bits + 1
+      else       nbits = n.minimum_bits + 1
+
+      if (display_bits)
+        if (display_bits < nbits) value &= ((1:<<:display_bits) - 1)
+        nbits = display_bits
+      else
+        if (nbits <= 32) nbits = 32
+        else             nbits = 64
+      endIf
+
+      local max_n = (1 :<<: (nbits-1)) - 1
+
+      local decimal_width = max_n.digit_count
+      decimal_width += (decimal_width / 3)  # one extra comma space for every 3 digits
+      ++decimal_width  # possible negative sign
+
+      print_indent
+      if (n >= 0) print n.format( "," ).justified( decimal_width )
+      else        print (("-" + (-n).format( "," )).justified( decimal_width ))
+      println
+
     method parse_files
       if ($isDefined(PARSER_EXISTS))
-        forEach (arg in command//args)
+        forEach (arg in command_line//args)
           local filepath = arg->String
           local parser = Parser( File(filepath) )
           local ast = parser.parse
@@ -48,40 +76,40 @@ class Orc
         endForEach
       endIf
 
+    method print_indent
+      print "   "
+      loop (command_index.digit_count.or_larger(2)) print " "
+
     method repl
       println "0rc Calculator"
       println "Commands include (h)elp and (q)uit."
-      local index = 1
       loop
-        local input = Console.input( "$> "(("#"+index).justified(5)) )
+        local input = Console.input( "@$> "((command_index.format("03"))) )
         if (not input or input == "quit" or input == "q") escapeLoop
         if (input == "") nextIteration
 
-        local parser = Parser( "<$>"(index.format("4")), input )
+        local parser = Parser( "<$>"(command_index.format("4")), input )
         try
           local statements = parser.parse
           Resolver.visit( statements )
           local result = statements.execute
-          if (not result.is_undefined)
-            print   "       "
-            println %result
-          endIf
+          result.display
         catch (error:CompileError)
           println "ERROR: " + error.message
         endTry
 
-        ++index
+        ++command_index
       endLoop
 
     method parse_args( args:String[] )->Variant
       # This method is unrelated to the Froley Parser
-      local command = CommandLineParser().
+      local command_line = CommandLineParser().
       [
         option( "--flag",     &alias="-f" )
         option( "--help",     &aliases=["-h","-?"] )
         option( "--setting=", &alias="-s" )
       ].parse( args )
-      return command
+      return command_line
 
     method print_usage
       println @|USAGE
