@@ -17,8 +17,8 @@ class ParserCore [abstract]
     ip_assign = 5
     ip_add_subtract = 6
     ip_add_subtract__inner = 7
-    ip_multiply_divide = 8
-    ip_multiply_divide__inner = 9
+    ip_multiply_divide_mod = 8
+    ip_multiply_divide_mod__inner = 9
     ip_negate = 10
     ip_term = 11
     ip_additional_nodes = 12
@@ -264,8 +264,8 @@ class ParserCore [abstract]
         case ip_assign: r_assign
         case ip_add_subtract: r_add_subtract
         case ip_add_subtract__inner: r_add_subtract__inner
-        case ip_multiply_divide: r_multiply_divide
-        case ip_multiply_divide__inner: r_multiply_divide__inner
+        case ip_multiply_divide_mod: r_multiply_divide_mod
+        case ip_multiply_divide_mod__inner: r_multiply_divide_mod__inner
         case ip_negate: r_negate
         case ip_term: r_term
         case ip_additional_nodes: r_additional_nodes
@@ -300,6 +300,13 @@ class ParserCore [abstract]
         temporarily _cur_t = _on_t
           r_arg_list
           if (not disable_output) _push( Println(_cur_t,_node_arg(-1)), 1 )
+          _cur_t = _previous_cur_t
+          return
+        endTemporarily
+      endIf
+      if (_next_t.type == TokenType.SYMBOL_SLASH_PERCENT)
+        temporarily _cur_t = _on_t
+          if (not disable_output) _push( StackDivideMod(_cur_t), 0 )
           _cur_t = _previous_cur_t
           return
         endTemporarily
@@ -345,7 +352,7 @@ class ParserCore [abstract]
 
     method r_add_subtract
       local _previous_cur_t = _cur_t
-      r_multiply_divide
+      r_multiply_divide_mod
       r_add_subtract__inner
       _cur_t = _previous_cur_t
 
@@ -354,7 +361,7 @@ class ParserCore [abstract]
       if (_next_t.type == TokenType.SYMBOL_PLUS)
         temporarily _cur_t = _on_t
           _consume_eols
-          r_multiply_divide
+          r_multiply_divide_mod
           if (not disable_output) _push( Add(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
           r_add_subtract__inner
           _cur_t = _previous_cur_t
@@ -364,7 +371,7 @@ class ParserCore [abstract]
       if (_next_t.type == TokenType.SYMBOL_MINUS)
         temporarily _cur_t = _on_t
           _consume_eols
-          r_multiply_divide
+          r_multiply_divide_mod
           if (not disable_output) _push( Subtract(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
           r_add_subtract__inner
           _cur_t = _previous_cur_t
@@ -373,20 +380,20 @@ class ParserCore [abstract]
       endIf
       _cur_t = _previous_cur_t
 
-    method r_multiply_divide
+    method r_multiply_divide_mod
       local _previous_cur_t = _cur_t
       r_negate
-      r_multiply_divide__inner
+      r_multiply_divide_mod__inner
       _cur_t = _previous_cur_t
 
-    method r_multiply_divide__inner
+    method r_multiply_divide_mod__inner
       local _previous_cur_t = _cur_t
       if (_next_t.type == TokenType.SYMBOL_STAR)
         temporarily _cur_t = _on_t
           _consume_eols
           r_negate
           if (not disable_output) _push( Multiply(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-          r_multiply_divide__inner
+          r_multiply_divide_mod__inner
           _cur_t = _previous_cur_t
           return
         endTemporarily
@@ -396,7 +403,17 @@ class ParserCore [abstract]
           _consume_eols
           r_negate
           if (not disable_output) _push( Divide(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-          r_multiply_divide__inner
+          r_multiply_divide_mod__inner
+          _cur_t = _previous_cur_t
+          return
+        endTemporarily
+      endIf
+      if (_next_t.type == TokenType.SYMBOL_PERCENT)
+        temporarily _cur_t = _on_t
+          _consume_eols
+          r_negate
+          if (not disable_output) _push( Mod(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+          r_multiply_divide_mod__inner
           _cur_t = _previous_cur_t
           return
         endTemporarily

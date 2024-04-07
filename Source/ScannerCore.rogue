@@ -40,7 +40,7 @@ class ScannerCore [abstract]
     _scan_pattern_2 = ScanPattern( "{[_a-zA-Z][_a-zA-Z0-9]*}" )
     _scan_pattern_3 = ScanPattern( "[0-9]" )
     _scan_pattern_4 = ScanPattern( "[0-9]*" )
-    _scan_table_0 = ScanTable("Hv8HKRA9Ei0UKBYrGC8aKhwAAAEAAgADAAQABQAGAA==")
+    _scan_table_0 = ScanTable("Jv8IKRI9FC0WKBglGiscLx4qJAAAAQACAAMABAAFAAYBJSIHAAgA")
     _scan_table_1 = ScanTable("HgABcAT/AXII/wFpDP8BbhD/AXQUAQFsGP8BbhwCAA==")
 
   METHODS
@@ -231,12 +231,18 @@ class ScannerCore [abstract]
             _add( TokenType.SYMBOL_OPEN_PAREN )
             return false
           case 4
-            _add( TokenType.SYMBOL_PLUS )
+            _add( TokenType.SYMBOL_PERCENT )
             return false
           case 5
-            _add( TokenType.SYMBOL_SLASH )
+            _add( TokenType.SYMBOL_PLUS )
             return false
           case 6
+            _add( TokenType.SYMBOL_SLASH )
+            return false
+          case 7
+            _add( TokenType.SYMBOL_SLASH_PERCENT )
+            return false
+          case 8
             _add( TokenType.SYMBOL_STAR )
             return false
           others

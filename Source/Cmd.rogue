@@ -378,3 +378,16 @@ class LiteralInt : Cmd
     method to->String:    return value
 
 endClass
+
+class StackDivideMod : Cmd
+  METHODS
+    method description->String
+      return "StackDivideMod"
+endClass
+
+class Mod : Binary
+  METHODS
+    method description->String
+      return "Mod($,$)" (%left,%right)
+
+endClass

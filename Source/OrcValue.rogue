@@ -1,0 +1,98 @@
+module Orc
+
+class OrcValue
+  METHODS
+    method display
+      noAction
+
+    method is_undefined->Logical
+      return false
+
+    method operator-()->OrcValue
+      return OrcUndefined
+
+    method operator+( other:OrcValue )->OrcValue
+      return OrcUndefined
+
+    method operator-( other:OrcValue )->OrcValue
+      return OrcUndefined
+
+    method operator*( other:OrcValue )->OrcValue
+      return OrcUndefined
+
+    method operator/( other:OrcValue )->OrcValue
+      return OrcUndefined
+
+    method operator%( other:OrcValue )->OrcValue
+      return OrcUndefined
+endClass
+
+class OrcInt( value:Int ) : OrcValue
+  METHODS
+    method display
+      Orc.display_int( value )
+
+    method operator-()->OrcValue
+      return OrcInt( -value )
+
+    method operator+( other:OrcValue )->OrcValue
+      if local other = other->(as OrcInt)
+        return OrcInt( value + other.value )
+      else
+        return OrcUndefined
+      endIf
+
+    method operator-( other:OrcValue )->OrcValue
+      if local other = other->(as OrcInt)
+        return OrcInt( value - other.value )
+      else
+        return OrcUndefined
+      endIf
+
+    method operator*( other:OrcValue )->OrcValue
+      if local other = other->(as OrcInt)
+        return OrcInt( value * other.value )
+      else
+        return OrcUndefined
+      endIf
+
+    method operator/( other:OrcValue )->OrcValue
+      if local other = other->(as OrcInt)
+        if (other.value == 0) return OrcUndefined
+        return OrcInt( value / other.value )
+      else
+        return OrcUndefined
+      endIf
+
+    method operator%( other:OrcValue )->OrcValue
+      if local other = other->(as OrcInt)
+        if (other.value == 0) return OrcUndefined
+        return OrcInt( value % other.value )
+      else
+        return OrcUndefined
+      endIf
+
+    method to->String
+      return value->String
+endClass
+
+class OrcReal( value:Real ) : OrcValue
+  METHODS
+    method display
+      Orc.display_real( value )
+
+    method operator-()->OrcValue
+      return Orcreal( -value )
+
+    method operator+( other:OrcValue )->OrcValue
+
+
+    method to->String
+      return value->String
+endClass
+
+class OrcUndefined : OrcValue [singleton]
+  METHODS
+    method is_undefined->Logical
+      return true
+endClass

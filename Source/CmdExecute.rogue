@@ -2,17 +2,82 @@ module Orc
 
 augment
   METHODS
-    method Cmd.execute->OrcObject
+    method Cmd.execute->OrcValue
       throw t.error( "[INTERNAL] $.execute() is undefined."(type_name) )
 
-    method LiteralInt.execute->OrcObject
-      return OrcInt( value )
+    method Add.execute->OrcValue
+      left.execute
+      right.execute
+      local b = Orc.pop
+      local a = Orc.pop
+      local result = a + b
+      Orc.push( result )
+      return result
 
-    method Negate.execute->OrcObject
-      return -operand.execute
+    method Subtract.execute->OrcValue
+      left.execute
+      right.execute
+      local b = Orc.pop
+      local a = Orc.pop
+      local result = a - b
+      Orc.push( result )
+      return result
 
-    method Statements.execute->OrcObject
-      local result = OrcUndefined : OrcObject
+    method Multiply.execute->OrcValue
+      left.execute
+      right.execute
+      local b = Orc.pop
+      local a = Orc.pop
+      local result = a * b
+      Orc.push( result )
+      return result
+
+    method Divide.execute->OrcValue
+      left.execute
+      right.execute
+      local b = Orc.pop
+      local a = Orc.pop
+      local result = a / b
+      Orc.push( result )
+      return result
+
+    method Mod.execute->OrcValue
+      left.execute
+      right.execute
+      local b = Orc.pop
+      local a = Orc.pop
+      local result = a % b
+      Orc.push( result )
+      return result
+
+    method LiteralInt.execute->OrcValue
+      local result = OrcInt( value )
+      Orc.push( result )
+      return result
+
+    method Negate.execute->OrcValue
+      local result = -(Orc.pop)
+      Orc.push( result )
+      return result
+
+    method StackDivideMod.execute->OrcValue
+      local b_value = Orc.pop
+      local a_value = Orc.pop
+      if (a_value instanceOf OrcInt and b_value instanceOf OrcInt)
+        local a = a_value->(as OrcInt).value
+        local b = b_value->(as OrcInt).value
+        if (b)
+          local div = OrcInt( a / b)
+          Orc.push( OrcInt(a % b) )
+          Orc.push( div )
+          return div
+        endIf
+      endIf
+      Orc.[ push(undefined), push(undefined) ]
+      return OrcUndefined
+
+    method Statements.execute->OrcValue
+      local result = OrcUndefined : OrcValue
       forEach (statement in this)
         result = statement.execute
       endForEach

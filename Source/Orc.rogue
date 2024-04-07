@@ -1,7 +1,7 @@
 module Orc
 
 $include CmdExecute
-$include OrcObject
+$include OrcValue
 $include Parser  [optional]
 $include Resolver
 $include Scanner
@@ -27,6 +27,9 @@ class Orc [singleton]
 
     display_bits  : Int32
 
+    stack = OrcValue[]
+    min_stack_count = 0
+
   METHODS
     method init( args:String[] )
       command_line = parse_args( args )
@@ -41,7 +44,7 @@ class Orc [singleton]
 
       repl
 
-    method display_bitwise( value:Int )
+    method display_int( value:Int )
       local n = value
       local nbits : Int
       if (n < 0) nbits = (n + 1).abs.minimum_bits + 1
@@ -66,6 +69,35 @@ class Orc [singleton]
       else        print (("-" + (-n).format( "," )).justified( decimal_width ))
       println
 
+    method display_real( value:Real )
+      print_indent
+      println value
+      #{
+      local n = value
+      local nbits : Int
+      if (n < 0) nbits = (n + 1).abs.minimum_bits + 1
+      else       nbits = n.minimum_bits + 1
+
+      if (display_bits)
+        if (display_bits < nbits) value &= ((1:<<:display_bits) - 1)
+        nbits = display_bits
+      else
+        if (nbits <= 32) nbits = 32
+        else             nbits = 64
+      endIf
+
+      local max_n = (1 :<<: (nbits-1)) - 1
+
+      local decimal_width = max_n.digit_count
+      decimal_width += (decimal_width / 3)  # one extra comma space for every 3 digits
+      ++decimal_width  # possible negative sign
+
+      print_indent
+      if (n >= 0) print n.format( "," ).justified( decimal_width )
+      else        print (("-" + (-n).format( "," )).justified( decimal_width ))
+      println
+      }#
+
     method parse_files
       if ($isDefined(PARSER_EXISTS))
         forEach (arg in command_line//args)
@@ -80,6 +112,18 @@ class Orc [singleton]
       print "   "
       loop (command_index.digit_count.or_larger(2)) print " "
 
+    method push( value:OrcValue )
+      stack.add( value )
+
+    method pop->OrcValue
+      if (stack.is_empty)
+        println "[Empty stack]"
+        return OrcUndefined
+      endIf
+      local result = stack.remove_last
+      min_stack_count .= or_smaller( stack.count )
+      return result
+
     method repl
       println "0rc Calculator"
       println "Commands include (h)elp and (q)uit."
@@ -92,8 +136,11 @@ class Orc [singleton]
         try
           local statements = parser.parse
           Resolver.visit( statements )
-          local result = statements.execute
-          result.display
+          min_stack_count = stack.count
+          statements.execute
+          forEach (i in min_stack_count..<stack.count)
+            stack[i].display
+          endForEach
         catch (error:CompileError)
           println "ERROR: " + error.message
         endTry

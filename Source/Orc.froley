@@ -14,13 +14,15 @@ STRING     string     [content]
 --------------------------------------------------------------------------------
 tokens Symbols
 --------------------------------------------------------------------------------
-SYMBOL_CLOSE_PAREN )  [structural]
-SYMBOL_EQUALS      =
-SYMBOL_MINUS       -
-SYMBOL_OPEN_PAREN  (
-SYMBOL_PLUS        +
-SYMBOL_SLASH       /
-SYMBOL_STAR        *
+SYMBOL_CLOSE_PAREN   )  [structural]
+SYMBOL_EQUALS        =
+SYMBOL_MINUS         -
+SYMBOL_OPEN_PAREN    (
+SYMBOL_PERCENT       %
+SYMBOL_PLUS          +
+SYMBOL_SLASH         /
+SYMBOL_SLASH_PERCENT /%
+SYMBOL_STAR          *
 
 --------------------------------------------------------------------------------
 tokens Keywords
@@ -107,6 +109,7 @@ parser
 - statement
   on "print"   arg_list -> Print(args)
   on "println" arg_list -> Println(args):Print
+  on '/%' -> StackDivideMod
   expression
 
 - consume_eols
@@ -123,15 +126,16 @@ parser
   assign
 
 - assign [rightBinary]
-  on "=" -> Assign
+  on '=' -> Assign
 
 - add_subtract [binary]
-  on "+" -> Add
-  on "-" -> Subtract
+  on '+' -> Add
+  on '-' -> Subtract
 
-- multiply_divide [binary]
-  on "*" -> Multiply
-  on "/" -> Divide
+- multiply_divide_mod [binary]
+  on '*' -> Multiply
+  on '/' -> Divide
+  on '%' -> Mod
 
 - negate [preUnary]
   on "-" -> Negate
