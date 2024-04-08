@@ -37,7 +37,7 @@ class Orc [singleton]
       # trace command_line
       # has //options and possibly //args
 
-      if (command_line//options//help or command_line//args.count == 0)
+      if (command_line//options//help)
         print_usage
         System.exit 0
       endIf
