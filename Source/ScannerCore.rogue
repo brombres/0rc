@@ -39,9 +39,10 @@ class ScannerCore [abstract]
     _scan_pattern_1 = ScanPattern( "{#[^\n]*}" )
     _scan_pattern_2 = ScanPattern( "{[_a-zA-Z][_a-zA-Z0-9]*}" )
     _scan_pattern_3 = ScanPattern( "[0-9]" )
-    _scan_pattern_4 = ScanPattern( "[0-9]*" )
-    _scan_table_0 = ScanTable("Jv8IKRI9FC0WKBglGiscLx4qJAAAAQACAAMABAAFAAYBJSIHAAgA")
-    _scan_table_1 = ScanTable("HgABcAT/AXII/wFpDP8BbhD/AXQUAQFsGP8BbhwCAA==")
+    _scan_pattern_4 = ScanPattern( "[0-9]+" )
+    _scan_pattern_5 = ScanPattern( "[0-9]*" )
+    _scan_table_0 = ScanTable("Lv8JKRQuFj0cLR4oICUiKyQvJiosAAD/AS8aAQACAAMABAAFAAYABwElKggACQA=")
+    _scan_table_1 = ScanTable("NgADcAhzImMs/wFyDP8BaRD/AW4U/wF0GAEBbBz/AW4gAgD/AWkm/wFuKgMA/wFvMP8BczQEAA==")
 
   METHODS
     method init( file:File )
@@ -222,27 +223,30 @@ class ScannerCore [abstract]
             _add( TokenType.SYMBOL_CLOSE_PAREN )
             return false
           case 1
-            _add( TokenType.SYMBOL_EQUALS )
+            _add( TokenType.SYMBOL_DOT_SLASH )
             return false
           case 2
-            _add( TokenType.SYMBOL_MINUS )
+            _add( TokenType.SYMBOL_EQUALS )
             return false
           case 3
-            _add( TokenType.SYMBOL_OPEN_PAREN )
+            _add( TokenType.SYMBOL_MINUS )
             return false
           case 4
-            _add( TokenType.SYMBOL_PERCENT )
+            _add( TokenType.SYMBOL_OPEN_PAREN )
             return false
           case 5
-            _add( TokenType.SYMBOL_PLUS )
+            _add( TokenType.SYMBOL_PERCENT )
             return false
           case 6
-            _add( TokenType.SYMBOL_SLASH )
+            _add( TokenType.SYMBOL_PLUS )
             return false
           case 7
-            _add( TokenType.SYMBOL_SLASH_PERCENT )
+            _add( TokenType.SYMBOL_SLASH )
             return false
           case 8
+            _add( TokenType.SYMBOL_SLASH_PERCENT )
+            return false
+          case 9
             _add( TokenType.SYMBOL_STAR )
             return false
           others
@@ -270,6 +274,12 @@ class ScannerCore [abstract]
           case 2
             _add( TokenType.KEYWORD_PRINTLN )
             return false
+          case 3
+            _add( TokenType.KEYWORD_SIN )
+            return false
+          case 4
+            _add( TokenType.KEYWORD_COS )
+            return false
           others
             necessary (false)
         endWhich
@@ -286,19 +296,25 @@ class ScannerCore [abstract]
         if (not r_scan_integer) return false
         if (_scan('.'))
           if (not r_scan_integer) return false
+          _add( TokenType.REAL )
+          return false
         endIf
         _add( TokenType.INTEGER )
         return false
       elseIf (_scan('.'))
-        if (not r_scan_integer) return false
-        _add( TokenType.REAL )
+        if (_scan_pattern_4.scan(_scanner,buffer))
+          _add( TokenType.REAL )
+          return false
+        endIf
+        _throw_syntax_error("Value expected after decimal point.")
         return false
       else
         return true
       endIf
+      return true
 
     method r_scan_integer->Logical
-      _scan_pattern_4.scan(_scanner,buffer)
+      _scan_pattern_5.scan(_scanner,buffer)
       return true
 
     method r_scan_string->Logical

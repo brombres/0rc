@@ -71,7 +71,7 @@ class Orc [singleton]
 
     method display_real( value:Real )
       print_indent
-      println value
+      println value.format( ",14.8" )
       #{
       local n = value
       local nbits : Int
@@ -110,7 +110,7 @@ class Orc [singleton]
 
     method print_indent
       print "   "
-      loop (command_index.digit_count.or_larger(2)) print " "
+      loop (command_index.digit_count.or_larger(3)) print " "
 
     method push( value:OrcValue )
       stack.add( value )
@@ -128,12 +128,12 @@ class Orc [singleton]
       println "0rc Calculator"
       println "Commands include (h)elp and (q)uit."
       loop
-        local input = Console.input( "@$> "((command_index.format("03"))) )
+        local input = Console.input( ("@$> "(command_index)).justified(6) )
         if (not input or input == "quit" or input == "q") escapeLoop
         if (input == "") nextIteration
 
-        local parser = Parser( "<$>"(command_index.format("4")), input )
         try
+          local parser = Parser( "@@$"(command_index), input )
           local statements = parser.parse
           Resolver.visit( statements )
           min_stack_count = stack.count

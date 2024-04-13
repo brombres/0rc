@@ -15,6 +15,7 @@ STRING     string     [content]
 tokens Symbols
 --------------------------------------------------------------------------------
 SYMBOL_CLOSE_PAREN   )  [structural]
+SYMBOL_DOT_SLASH     ./
 SYMBOL_EQUALS        =
 SYMBOL_MINUS         -
 SYMBOL_OPEN_PAREN    (
@@ -29,6 +30,8 @@ tokens Keywords
 --------------------------------------------------------------------------------
 KEYWORD_PRINT   print
 KEYWORD_PRINTLN println
+KEYWORD_SIN     sin
+KEYWORD_COS     cos
 
 --------------------------------------------------------------------------------
 scanner
@@ -69,11 +72,14 @@ scanner
 
   if (scan [0-9])
     scan_integer  # First character is now in 'buffer'
-    if (scan '.') scan_integer
+    if (scan '.')
+      scan_integer
+      produce REAL
+    endIf
     produce INTEGER
   elseIf (scan '.')
-    scan_integer
-    produce REAL
+    if (scan [0-9]+) produce REAL
+    syntaxError "Value expected after decimal point."
   else
     return
   endIf
@@ -109,7 +115,12 @@ parser
 - statement
   on "print"   arg_list -> Print(args)
   on "println" arg_list -> Println(args):Print
-  on '/%' -> StackDivideMod
+  on '+'  -> StackAdd
+  on '-'  -> StackSubtract
+  on '*'  -> StackMultiply
+  on '/'  -> StackDivide
+  on '%'  -> StackMod
+  on './' -> StackDivideReal
   expression
 
 - consume_eols
@@ -133,9 +144,10 @@ parser
   on '-' -> Subtract
 
 - multiply_divide_mod [binary]
-  on '*' -> Multiply
-  on '/' -> Divide
-  on '%' -> Mod
+  on '*'  -> Multiply
+  on '/'  -> Divide
+  on './' -> DivideReal
+  on '%'  -> Mod
 
 - negate [preUnary]
   on "-" -> Negate
@@ -143,10 +155,11 @@ parser
 - term
   on '(' expression ')': return
   on IDENTIFIER -> Access(name=content)
-  on INTEGER    -> LiteralInteger(value=content)
-  on REAL       -> LiteralReal(value=content:Real)
+  on INTEGER    -> LiteralInteger(value=content):LiteralNumber
+  on REAL       -> LiteralReal(value=content:Real):LiteralNumber
   on STRING     -> LiteralString(value=content)
   syntaxError
 
 - additional_nodes
   create LiteralInt( value:Int )
+  create LiteralNumber

@@ -25,9 +25,17 @@ class OrcValue
 
     method operator%( other:OrcValue )->OrcValue
       return OrcUndefined
+
+    method to->Int
+      return 0
+
+    method to->Real
+      return this->Int
 endClass
 
-class OrcInt( value:Int ) : OrcValue
+class OrcNumber : OrcValue;
+
+class OrcInt( value:Int ) : OrcNumber
   METHODS
     method display
       Orc.display_int( value )
@@ -38,6 +46,8 @@ class OrcInt( value:Int ) : OrcValue
     method operator+( other:OrcValue )->OrcValue
       if local other = other->(as OrcInt)
         return OrcInt( value + other.value )
+      elseIf local other = other->(as OrcReal)
+        return OrcReal( value + other.value )
       else
         return OrcUndefined
       endIf
@@ -45,6 +55,8 @@ class OrcInt( value:Int ) : OrcValue
     method operator-( other:OrcValue )->OrcValue
       if local other = other->(as OrcInt)
         return OrcInt( value - other.value )
+      elseIf local other = other->(as OrcReal)
+        return OrcReal( value - other.value )
       else
         return OrcUndefined
       endIf
@@ -52,6 +64,8 @@ class OrcInt( value:Int ) : OrcValue
     method operator*( other:OrcValue )->OrcValue
       if local other = other->(as OrcInt)
         return OrcInt( value * other.value )
+      elseIf local other = other->(as OrcReal)
+        return OrcReal( value * other.value )
       else
         return OrcUndefined
       endIf
@@ -60,6 +74,8 @@ class OrcInt( value:Int ) : OrcValue
       if local other = other->(as OrcInt)
         if (other.value == 0) return OrcUndefined
         return OrcInt( value / other.value )
+      elseIf local other = other->(as OrcReal)
+        return OrcReal( value / other.value )
       else
         return OrcUndefined
       endIf
@@ -68,24 +84,70 @@ class OrcInt( value:Int ) : OrcValue
       if local other = other->(as OrcInt)
         if (other.value == 0) return OrcUndefined
         return OrcInt( value % other.value )
+      elseIf local other = other->(as OrcReal)
+        return OrcReal( value % other.value )
       else
         return OrcUndefined
       endIf
+
+    method to->Int
+      return value
+
+    method to->Real
+      return value
 
     method to->String
       return value->String
 endClass
 
-class OrcReal( value:Real ) : OrcValue
+class OrcReal( value:Real ) : OrcNumber
   METHODS
     method display
       Orc.display_real( value )
 
     method operator-()->OrcValue
-      return Orcreal( -value )
+      return OrcReal( -value )
 
     method operator+( other:OrcValue )->OrcValue
+      if local other = other->(as OrcNumber)
+        return OrcReal( value + other->Real )
+      else
+        return OrcUndefined
+      endIf
 
+    method operator-( other:OrcValue )->OrcValue
+      if local other = other->(as OrcNumber)
+        return OrcReal( value - other->Real )
+      else
+        return OrcUndefined
+      endIf
+
+    method operator*( other:OrcValue )->OrcValue
+      if local other = other->(as OrcNumber)
+        return OrcReal( value * other->Real )
+      else
+        return OrcUndefined
+      endIf
+
+    method operator/( other:OrcValue )->OrcValue
+      if local other = other->(as OrcNumber)
+        return OrcReal( value / other->Real )
+      else
+        return OrcUndefined
+      endIf
+
+    method operator%( other:OrcValue )->OrcValue
+      if local other = other->(as OrcNumber)
+        return OrcReal( value % other->Real )
+      else
+        return OrcUndefined
+      endIf
+
+    method to->Int
+      return value
+
+    method to->Real
+      return value
 
     method to->String
       return value->String
@@ -93,6 +155,10 @@ endClass
 
 class OrcUndefined : OrcValue [singleton]
   METHODS
+    method display
+      Orc.print_indent
+      println "[undefined]"
+
     method is_undefined->Logical
       return true
 endClass

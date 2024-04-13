@@ -244,7 +244,7 @@ class Divide : Binary
 
 endClass
 
-class LiteralInteger : Cmd
+class LiteralInteger : LiteralNumber
   PROPERTIES
     value : String
 
@@ -267,7 +267,7 @@ class LiteralInteger : Cmd
 
 endClass
 
-class LiteralReal : Cmd
+class LiteralReal : LiteralNumber
   PROPERTIES
     value : Real
 
@@ -281,9 +281,10 @@ class LiteralReal : Cmd
     method description->String
       return "LiteralReal($)" (%value)
 
-    method to->Int:    return value
-    method to->Real:   return value
-    method to->String: return value
+    method to->Int:     return value
+    method to->Logical: return value?
+    method to->Real:    return value
+    method to->String:  return value
 
 endClass
 
@@ -379,15 +380,58 @@ class LiteralInt : Cmd
 
 endClass
 
-class StackDivideMod : Cmd
+class StackDivideReal : Cmd
   METHODS
     method description->String
-      return "StackDivideMod"
+      return "StackDivideReal"
 endClass
 
 class Mod : Binary
   METHODS
     method description->String
       return "Mod($,$)" (%left,%right)
+
+endClass
+
+class LiteralNumber : Cmd
+  METHODS
+    method description->String
+      return "LiteralNumber"
+endClass
+
+class StackAdd : Cmd
+  METHODS
+    method description->String
+      return "StackAdd"
+endClass
+
+class StackDivide : Cmd
+  METHODS
+    method description->String
+      return "StackDivide"
+endClass
+
+class StackMod : Cmd
+  METHODS
+    method description->String
+      return "StackMod"
+endClass
+
+class StackMultiply : Cmd
+  METHODS
+    method description->String
+      return "StackMultiply"
+endClass
+
+class StackSubtract : Cmd
+  METHODS
+    method description->String
+      return "StackSubtract"
+endClass
+
+class DivideReal : Binary
+  METHODS
+    method description->String
+      return "DivideReal($,$)" (%left,%right)
 
 endClass

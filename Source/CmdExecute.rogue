@@ -41,6 +41,15 @@ augment
       Orc.push( result )
       return result
 
+    method DivideReal.execute->OrcValue
+      left.execute
+      right.execute
+      local b = Orc.pop
+      local a = Orc.pop
+      local result = OrcReal( a->Real / b->Real )
+      Orc.push( result )
+      return result
+
     method Mod.execute->OrcValue
       left.execute
       right.execute
@@ -55,25 +64,154 @@ augment
       Orc.push( result )
       return result
 
+    method LiteralReal.execute->OrcValue
+      local result = OrcReal( value )
+      Orc.push( result )
+      return result
+
     method Negate.execute->OrcValue
       local result = -(Orc.pop)
       Orc.push( result )
       return result
 
-    method StackDivideMod.execute->OrcValue
-      local b_value = Orc.pop
-      local a_value = Orc.pop
-      if (a_value instanceOf OrcInt and b_value instanceOf OrcInt)
-        local a = a_value->(as OrcInt).value
-        local b = b_value->(as OrcInt).value
-        if (b)
-          local div = OrcInt( a / b)
-          Orc.push( OrcInt(a % b) )
-          Orc.push( div )
-          return div
+    method StackAdd.execute->OrcValue
+      local b = Orc.pop
+      local a = Orc.pop
+      if local a_number = a->(as OrcNumber)
+        if local b_number = b->(as OrcNumber)
+          if (a_number instanceOf OrcReal or b_number instanceOf OrcReal)
+            local a_real = a_number->Real
+            local b_real = b_number->Real
+            local result = OrcReal( a_real + b_real )
+            Orc.push( result )
+            return result
+          else
+            local a_int = a_number->(as OrcInt).value
+            local b_int = b_number->(as OrcInt).value
+            local result = OrcInt( a_int + b_int)
+            Orc.push( result )
+            return result
+          endIf
         endIf
       endIf
-      Orc.[ push(undefined), push(undefined) ]
+
+      Orc.push( OrcUndefined )
+      return OrcUndefined
+
+    method StackSubtract.execute->OrcValue
+      local b = Orc.pop
+      local a = Orc.pop
+      if local a_number = a->(as OrcNumber)
+        if local b_number = b->(as OrcNumber)
+          if (a_number instanceOf OrcReal or b_number instanceOf OrcReal)
+            local a_real = a_number->Real
+            local b_real = b_number->Real
+            local result = OrcReal( a_real - b_real )
+            Orc.push( result )
+            return result
+          else
+            local a_int = a_number->(as OrcInt).value
+            local b_int = b_number->(as OrcInt).value
+            local result = OrcInt( a_int - b_int)
+            Orc.push( result )
+            return result
+          endIf
+        endIf
+      endIf
+
+      Orc.push( OrcUndefined )
+      return OrcUndefined
+
+    method StackMultiply.execute->OrcValue
+      local b = Orc.pop
+      local a = Orc.pop
+      if local a_number = a->(as OrcNumber)
+        if local b_number = b->(as OrcNumber)
+          if (a_number instanceOf OrcReal or b_number instanceOf OrcReal)
+            local a_real = a_number->Real
+            local b_real = b_number->Real
+            local result = OrcReal( a_real * b_real )
+            Orc.push( result )
+            return result
+          else
+            local a_int = a_number->(as OrcInt).value
+            local b_int = b_number->(as OrcInt).value
+            local result = OrcInt( a_int * b_int)
+            Orc.push( result )
+            return result
+          endIf
+        endIf
+      endIf
+
+      Orc.push( OrcUndefined )
+      return OrcUndefined
+
+    method StackDivide.execute->OrcValue
+      local b = Orc.pop
+      local a = Orc.pop
+      if local a_number = a->(as OrcNumber)
+        if local b_number = b->(as OrcNumber)
+          if (a_number instanceOf OrcReal or b_number instanceOf OrcReal)
+            local a_real = a_number->Real
+            local b_real = b_number->Real
+            local result = OrcReal( a_real / b_real )
+            Orc.push( result )
+            return result
+          else
+            local a_int = a_number->(as OrcInt).value
+            local b_int = b_number->(as OrcInt).value
+            if (b_int)
+              local result = OrcInt( a_int / b_int)
+              Orc.push( result )
+              return result
+            endIf
+          endIf
+        endIf
+      endIf
+
+      Orc.push( OrcUndefined )
+      return OrcUndefined
+
+    method StackMod.execute->OrcValue
+      local b = Orc.pop
+      local a = Orc.pop
+      if local a_number = a->(as OrcNumber)
+        if local b_number = b->(as OrcNumber)
+          if (a_number instanceOf OrcReal or b_number instanceOf OrcReal)
+            local a_real = a_number->Real
+            local b_real = b_number->Real
+            local result = OrcReal( a_real % b_real )
+            Orc.push( result )
+            return result
+          else
+            local a_int = a_number->(as OrcInt).value
+            local b_int = b_number->(as OrcInt).value
+            if (b_int)
+              local result = OrcInt( a_int % b_int)
+              Orc.push( result )
+              return result
+            endIf
+          endIf
+        endIf
+      endIf
+
+      Orc.push( OrcUndefined )
+      return OrcUndefined
+
+    method StackDivideReal.execute->OrcValue
+      local b = Orc.pop
+      local a = Orc.pop
+      if local a_number = a->(as OrcNumber)
+        if local b_number = b->(as OrcNumber)
+          local a_real = a_number->Real
+          local b_real = b_number->Real
+          local result = OrcReal( a_real / b_real )
+          Orc.push( result )
+          return result
+        endIf
+      endIf
+
+      Orc.push( OrcUndefined )
       return OrcUndefined
 
     method Statements.execute->OrcValue
