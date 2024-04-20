@@ -128,12 +128,12 @@ class Orc [singleton]
       println "0rc Calculator"
       println "Commands include (h)elp and (q)uit."
       loop
-        local input = Console.input( ("@$> "(command_index)).justified(6) )
+        local input = Console.input( "$> "(command_index) )
         if (not input or input == "quit" or input == "q") escapeLoop
         if (input == "") nextIteration
 
         try
-          local parser = Parser( "@@$"(command_index), input )
+          local parser = Parser( "$"(command_index), input )
           local statements = parser.parse
           Resolver.visit( statements )
           min_stack_count = stack.count
