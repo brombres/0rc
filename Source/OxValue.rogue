@@ -1,0 +1,164 @@
+module Ox
+
+class OxValue
+  METHODS
+    method display
+      noAction
+
+    method is_undefined->Logical
+      return false
+
+    method operator-()->OxValue
+      return OxUndefined
+
+    method operator+( other:OxValue )->OxValue
+      return OxUndefined
+
+    method operator-( other:OxValue )->OxValue
+      return OxUndefined
+
+    method operator*( other:OxValue )->OxValue
+      return OxUndefined
+
+    method operator/( other:OxValue )->OxValue
+      return OxUndefined
+
+    method operator%( other:OxValue )->OxValue
+      return OxUndefined
+
+    method to->Int
+      return 0
+
+    method to->Real
+      return this->Int
+endClass
+
+class OxNumber : OxValue;
+
+class OxInt( value:Int ) : OxNumber
+  METHODS
+    method display
+      Ox.display_int( value )
+
+    method operator-()->OxValue
+      return OxInt( -value )
+
+    method operator+( other:OxValue )->OxValue
+      if local other = other->(as OxInt)
+        return OxInt( value + other.value )
+      elseIf local other = other->(as OxReal)
+        return OxReal( value + other.value )
+      else
+        return OxUndefined
+      endIf
+
+    method operator-( other:OxValue )->OxValue
+      if local other = other->(as OxInt)
+        return OxInt( value - other.value )
+      elseIf local other = other->(as OxReal)
+        return OxReal( value - other.value )
+      else
+        return OxUndefined
+      endIf
+
+    method operator*( other:OxValue )->OxValue
+      if local other = other->(as OxInt)
+        return OxInt( value * other.value )
+      elseIf local other = other->(as OxReal)
+        return OxReal( value * other.value )
+      else
+        return OxUndefined
+      endIf
+
+    method operator/( other:OxValue )->OxValue
+      if local other = other->(as OxInt)
+        if (other.value == 0) return OxUndefined
+        return OxInt( value / other.value )
+      elseIf local other = other->(as OxReal)
+        return OxReal( value / other.value )
+      else
+        return OxUndefined
+      endIf
+
+    method operator%( other:OxValue )->OxValue
+      if local other = other->(as OxInt)
+        if (other.value == 0) return OxUndefined
+        return OxInt( value % other.value )
+      elseIf local other = other->(as OxReal)
+        return OxReal( value % other.value )
+      else
+        return OxUndefined
+      endIf
+
+    method to->Int
+      return value
+
+    method to->Real
+      return value
+
+    method to->String
+      return value->String
+endClass
+
+class OxReal( value:Real ) : OxNumber
+  METHODS
+    method display
+      Ox.display_real( value )
+
+    method operator-()->OxValue
+      return OxReal( -value )
+
+    method operator+( other:OxValue )->OxValue
+      if local other = other->(as OxNumber)
+        return OxReal( value + other->Real )
+      else
+        return OxUndefined
+      endIf
+
+    method operator-( other:OxValue )->OxValue
+      if local other = other->(as OxNumber)
+        return OxReal( value - other->Real )
+      else
+        return OxUndefined
+      endIf
+
+    method operator*( other:OxValue )->OxValue
+      if local other = other->(as OxNumber)
+        return OxReal( value * other->Real )
+      else
+        return OxUndefined
+      endIf
+
+    method operator/( other:OxValue )->OxValue
+      if local other = other->(as OxNumber)
+        return OxReal( value / other->Real )
+      else
+        return OxUndefined
+      endIf
+
+    method operator%( other:OxValue )->OxValue
+      if local other = other->(as OxNumber)
+        return OxReal( value % other->Real )
+      else
+        return OxUndefined
+      endIf
+
+    method to->Int
+      return value
+
+    method to->Real
+      return value
+
+    method to->String
+      return value->String
+endClass
+
+class OxUndefined : OxValue [singleton]
+  METHODS
+    method display
+      Ox.print_indent
+      println "[undefined]"
+
+    method is_undefined->Logical
+      return true
+endClass

@@ -10,8 +10,8 @@ augment Build
   # You can create a Local.settings file with overrides for these values, e.g.:
   # BUILD_MODE = release
   PROPERTIES
-    PROJECT          = "Orc"
-    LAUNCHER_NAME    = "0rc"
+    PROJECT          = "Ox"
+    LAUNCHER_NAME    = "0x"
 
     BUILD_MODE       = "debug"  # set to "debug" or "release"
     LAUNCHER_FOLDER  = "/usr/local/bin"
@@ -27,7 +27,7 @@ endAugment
 routine rogo_default
   # Builds and runs this project - equivalent to 'rogo build && rogo run'.
   rogo_build
-  #rogo_install  # Uncomment to automatically install a /usr/local/bin/0rc launcher
+  #rogo_install  # Uncomment to automatically install a /usr/local/bin/0x launcher
   rogo_run
 endRoutine
 

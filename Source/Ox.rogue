@@ -1,7 +1,7 @@
-module Orc
+module Ox
 
 $include CmdExecute
-$include OrcValue
+$include OxValue
 $include Parser  [optional]
 $include Resolver
 $include Scanner
@@ -10,7 +10,7 @@ $include Visitor
 uses Console/CommandLineParser
 
 try
-  Orc.init( System.command_line_arguments )
+  Ox.init( System.command_line_arguments )
 catch (error:CompileError)
   Console.error.println error
   System.exit 1
@@ -20,14 +20,14 @@ catch (error:Error)
   System.exit 1
 endTry
 
-class Orc [singleton]
+class Ox [singleton]
   PROPERTIES
     command_line  : Variant
     command_index = 1
 
     display_bits  : Int32
 
-    stack = OrcValue[]
+    stack = OxValue[]
     min_stack_count = 0
 
   METHODS
@@ -112,20 +112,20 @@ class Orc [singleton]
       print "   "
       loop (command_index.digit_count.or_larger(3)) print " "
 
-    method push( value:OrcValue )
+    method push( value:OxValue )
       stack.add( value )
 
-    method pop->OrcValue
+    method pop->OxValue
       if (stack.is_empty)
         println "[Empty stack]"
-        return OrcUndefined
+        return OxUndefined
       endIf
       local result = stack.remove_last
       min_stack_count .= or_smaller( stack.count )
       return result
 
     method repl
-      println "0rc Calculator"
+      println "0x Calculator"
       println "Commands include (h)elp and (q)uit."
       loop
         local input = Console.input( "$> "(command_index) )
@@ -160,7 +160,7 @@ class Orc [singleton]
 
     method print_usage
       println @|USAGE
-               |  0rc [OPTIONS] <filepath>
+               |  0x [OPTIONS] <filepath>
                |
                |OPTIONS
                |  --help, -h, -?

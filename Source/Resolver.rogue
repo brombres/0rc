@@ -1,4 +1,4 @@
-module Orc
+module Ox
 
 class Resolver : Visitor [singleton]
   METHODS

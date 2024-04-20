@@ -1,4 +1,4 @@
-# 0rc
+# 0x
 Omni-purpose RPN Calculator
 
 About     | Current Release
