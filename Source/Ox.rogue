@@ -67,6 +67,11 @@ class Ox [singleton]
       print_indent
       if (n >= 0) print n.format( "," ).justified( decimal_width )
       else        print (("-" + (-n).format( "," )).justified( decimal_width ))
+
+      print "  $"
+      print n->String(&hex).justified(nbits/4,'0').rightmost(nbits/4).split(4).join('_')
+      print "  %"
+      print n->String(&binary).justified(nbits,'0').rightmost(nbits).split(4).join('_')
       println
 
     method display_real( value:Real )
