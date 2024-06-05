@@ -3,5 +3,5 @@ module Ox
 class Resolver : Visitor [singleton]
   METHODS
     method on_visit( cmd:LiteralInteger )->Cmd
-      return LiteralInt( cmd.t, cmd.value->Int )
+      return LiteralInt( cmd.t, cmd->Int )
 endClass

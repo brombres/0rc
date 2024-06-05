@@ -45,13 +45,13 @@ scanner
 
   if (consume('\n')) produce EOL
 
-  match
-    produceAny Symbols
-  endMatch
-
   scan_id_or_keyword
   scan_number
   scan_string
+
+  match
+    produceAny Symbols
+  endMatch
 
   syntaxError
 
@@ -70,22 +70,47 @@ scanner
 - scan_number
   if (not hasAnother) return
 
-  if (scan [0-9])
-    scan_integer  # First character is now in 'buffer'
+  if (scan('$') or scan("0x"))
+    if (scan [0-9a-fA-F][0-9a-fA-F_]*)
+      produce INTEGER
+    else
+      syntaxError "Hexadecimal digits (0-9/a-f/A-F) expected."
+    endIf
+  elseIf (scan('%'))
+    if (scan [01][01_]*)
+      produce INTEGER
+    else
+      produce SYMBOL_PERCENT
+    endIf
+  elseIf (scan("0b"))
+    if (scan [01][01_]*)
+      produce INTEGER
+    else
+      syntaxError "Binary digits (0/1) expected."
+    endIf
+  elseIf (scan '0')
+    if (scan [0-9_]+) produce INTEGER  # octal integer
+    if (scan '.')
+      scan_integer
+      produce REAL   # 0.ddd
+    endIf
+    produce INTEGER  # literal 0
+  elseIf (scan [0-9][0-9_]*)
     if (scan '.')
       scan_integer
       produce REAL
     endIf
     produce INTEGER
   elseIf (scan '.')
-    if (scan [0-9]+) produce REAL
+    if (scan [0-9][0-9_]*) produce REAL
     syntaxError "Value expected after decimal point."
   else
     return
   endIf
 
 - scan_integer
-  scan [0-9]*  # Fills 'buffer' with remaining digits
+  if (not scan [0-9]) return
+  scan [0-9_]*
 
 - scan_string
   if (not consume('"')) return
@@ -156,7 +181,7 @@ parser
   on '(' expression ')': return
   on IDENTIFIER -> Access(name=content)
   on INTEGER    -> LiteralInteger(value=content):LiteralNumber
-  on REAL       -> LiteralReal(value=content:Real):LiteralNumber
+  on REAL       -> LiteralReal(value=content):LiteralNumber
   on STRING     -> LiteralString(value=content)
   syntaxError
 

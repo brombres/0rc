@@ -514,7 +514,7 @@ class ParserCore [abstract]
       endIf
       if (_next_t.type == TokenType.REAL)
         temporarily _cur_t = _on_t
-          if (not disable_output) _push( LiteralReal(_cur_t,_string_to_Real(_cur_t.content)), 0 )
+          if (not disable_output) _push( LiteralReal(_cur_t,_cur_t.content), 0 )
           _cur_t = _previous_cur_t
           return 0
         endTemporarily

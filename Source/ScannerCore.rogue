@@ -38,9 +38,12 @@ class ScannerCore [abstract]
     _scan_pattern_0 = ScanPattern( "[ \r\t]*" )
     _scan_pattern_1 = ScanPattern( "{#[^\n]*}" )
     _scan_pattern_2 = ScanPattern( "{[_a-zA-Z][_a-zA-Z0-9]*}" )
-    _scan_pattern_3 = ScanPattern( "[0-9]" )
-    _scan_pattern_4 = ScanPattern( "[0-9]+" )
-    _scan_pattern_5 = ScanPattern( "[0-9]*" )
+    _scan_pattern_3 = ScanPattern( "{[0-9a-fA-F][0-9a-fA-F_]*}" )
+    _scan_pattern_4 = ScanPattern( "{[01][01_]*}" )
+    _scan_pattern_5 = ScanPattern( "[0-9_]+" )
+    _scan_pattern_6 = ScanPattern( "{[0-9][0-9_]*}" )
+    _scan_pattern_7 = ScanPattern( "[0-9]" )
+    _scan_pattern_8 = ScanPattern( "[0-9_]*" )
     _scan_table_0 = ScanTable("Lv8JKRQuFj0cLR4oICUiKyQvJiosAAD/AS8aAQACAAMABAAFAAYABwElKggACQA=")
     _scan_table_1 = ScanTable("NgADcAhzImMs/wFyDP8BaRD/AW4U/wF0GAEBbBz/AW4gAgD/AWkm/wFuKgMA/wFvMP8BczQEAA==")
 
@@ -206,6 +209,9 @@ class ScannerCore [abstract]
         _add( TokenType.EOL )
         return false
       endIf
+      if (not r_scan_id_or_keyword) return false
+      if (not r_scan_number) return false
+      if (not r_scan_string) return false
       _scan_table_0.reset
       contingent
         block n=1
@@ -253,9 +259,6 @@ class ScannerCore [abstract]
             necessary (false)
         endWhich
       endContingent
-      if (not r_scan_id_or_keyword) return false
-      if (not r_scan_number) return false
-      if (not r_scan_string) return false
       _throw_syntax_error
       return false
       return true
@@ -292,8 +295,43 @@ class ScannerCore [abstract]
       if ((not _scanner.has_another))
         return true
       endIf
-      if (_scan_pattern_3.scan(_scanner,buffer))
-        if (not r_scan_integer) return false
+      if ((_scan('$') or _scan("0x")))
+        if (_scan_pattern_3.scan(_scanner,buffer))
+          _add( TokenType.INTEGER )
+          return false
+        else
+          _throw_syntax_error("Hexadecimal digits (0-9/a-f/A-F) expected.")
+          return false
+        endIf
+      elseIf (_scan('%'))
+        if (_scan_pattern_4.scan(_scanner,buffer))
+          _add( TokenType.INTEGER )
+          return false
+        else
+          _add( TokenType.SYMBOL_PERCENT )
+          return false
+        endIf
+      elseIf (_scan("0b"))
+        if (_scan_pattern_4.scan(_scanner,buffer))
+          _add( TokenType.INTEGER )
+          return false
+        else
+          _throw_syntax_error("Binary digits (0/1) expected.")
+          return false
+        endIf
+      elseIf (_scan('0'))
+        if (_scan_pattern_5.scan(_scanner,buffer))
+          _add( TokenType.INTEGER )
+          return false
+        endIf
+        if (_scan('.'))
+          if (not r_scan_integer) return false
+          _add( TokenType.REAL )
+          return false
+        endIf
+        _add( TokenType.INTEGER )
+        return false
+      elseIf (_scan_pattern_6.scan(_scanner,buffer))
         if (_scan('.'))
           if (not r_scan_integer) return false
           _add( TokenType.REAL )
@@ -302,7 +340,7 @@ class ScannerCore [abstract]
         _add( TokenType.INTEGER )
         return false
       elseIf (_scan('.'))
-        if (_scan_pattern_4.scan(_scanner,buffer))
+        if (_scan_pattern_6.scan(_scanner,buffer))
           _add( TokenType.REAL )
           return false
         endIf
@@ -314,7 +352,10 @@ class ScannerCore [abstract]
       return true
 
     method r_scan_integer->Logical
-      _scan_pattern_5.scan(_scanner,buffer)
+      if ((not _scan_pattern_7.scan(_scanner,buffer)))
+        return true
+      endIf
+      _scan_pattern_8.scan(_scanner,buffer)
       return true
 
     method r_scan_string->Logical
