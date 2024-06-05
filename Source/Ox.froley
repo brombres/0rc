@@ -103,6 +103,7 @@ scanner
     produce INTEGER
   elseIf (scan '.')
     if (scan [0-9][0-9_]*) produce REAL
+    if (consume('/')) produce SYMBOL_DOT_SLASH
     syntaxError "Value expected after decimal point."
   else
     return

@@ -344,6 +344,10 @@ class ScannerCore [abstract]
           _add( TokenType.REAL )
           return false
         endIf
+        if (_scanner.consume('/'))
+          _add( TokenType.SYMBOL_DOT_SLASH )
+          return false
+        endIf
         _throw_syntax_error("Value expected after decimal point.")
         return false
       else
