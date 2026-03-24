@@ -28,7 +28,6 @@ augment
       right.execute
       local b = Ox.pop
       local a = Ox.pop
-      trace a,b
       local result = a - (a % b)
       Ox.push( result )
       return result
