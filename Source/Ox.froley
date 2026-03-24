@@ -18,6 +18,7 @@ SYMBOL_CLOSE_PAREN   )  [structural]
 SYMBOL_DOT_SLASH     ./
 SYMBOL_EQUALS        =
 SYMBOL_MINUS         -
+SYMBOL_SLASH_STAR    /*
 SYMBOL_OPEN_PAREN    (
 SYMBOL_PERCENT       %
 SYMBOL_PLUS          +
@@ -147,6 +148,7 @@ parser
   on '/'  -> StackDivide
   on '%'  -> StackMod
   on './' -> StackDivideReal
+  on '/*' -> StackMinusMod
   expression
 
 - consume_eols
@@ -173,6 +175,7 @@ parser
   on '*'  -> Multiply
   on '/'  -> Divide
   on './' -> DivideReal
+  on '/*' -> MinusMod
   on '%'  -> Mod
 
 - negate [preUnary]

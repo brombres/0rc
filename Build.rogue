@@ -33,7 +33,8 @@ endRoutine
 
 routine rogo_run
   # Runs this project.
-  execute "$ Test.$" (exe_file.esc,Build.LAUNCHER_NAME)
+  execute exe_file.esc
+  #execute "$ Test.$" (exe_file.esc,Build.LAUNCHER_NAME)
 endRoutine
 
 routine rogo_debug

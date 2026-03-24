@@ -1,4 +1,4 @@
-module Ox
+library Ox
 
 augment
   METHODS
@@ -20,6 +20,16 @@ augment
       local b = Ox.pop
       local a = Ox.pop
       local result = a - b
+      Ox.push( result )
+      return result
+
+    method MinusMod.execute->OxValue
+      left.execute
+      right.execute
+      local b = Ox.pop
+      local a = Ox.pop
+      trace a,b
+      local result = a - (a % b)
       Ox.push( result )
       return result
 
@@ -113,6 +123,30 @@ augment
             local a_int = a_number->(as OxInt).value
             local b_int = b_number->(as OxInt).value
             local result = OxInt( a_int - b_int)
+            Ox.push( result )
+            return result
+          endIf
+        endIf
+      endIf
+
+      Ox.push( OxUndefined )
+      return OxUndefined
+
+    method StackMinusMod.execute->OxValue
+      local b = Ox.pop
+      local a = Ox.pop
+      if local a_number = a->(as OxNumber)
+        if local b_number = b->(as OxNumber)
+          if (a_number instanceOf OxReal or b_number instanceOf OxReal)
+            local a_real = a_number->Real
+            local b_real = b_number->Real
+            local result = OxReal( a_real - (a_real % b_real) )
+            Ox.push( result )
+            return result
+          else
+            local a_int = a_number->(as OxInt).value
+            local b_int = b_number->(as OxInt).value
+            local result = OxInt( a_int - (a_int % b_int) )
             Ox.push( result )
             return result
           endIf

@@ -1,4 +1,4 @@
-module Ox
+library Ox
 
 class OxValue
   METHODS

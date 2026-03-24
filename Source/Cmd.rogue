@@ -1,5 +1,5 @@
 # Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
-module Ox
+library Ox
 
 class Cmd( t:Token )
   GLOBAL METHODS
@@ -453,5 +453,18 @@ class DivideReal : Binary
   METHODS
     method description->String
       return "DivideReal($,$)" (%left,%right)
+
+endClass
+
+class StackMinusMod : Cmd
+  METHODS
+    method description->String
+      return "StackMinusMod"
+endClass
+
+class MinusMod : Binary
+  METHODS
+    method description->String
+      return "MinusMod($,$)" (%left,%right)
 
 endClass

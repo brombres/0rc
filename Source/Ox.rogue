@@ -1,4 +1,4 @@
-module Ox
+library Ox
 
 $include CmdExecute
 $include OxValue
@@ -34,12 +34,20 @@ class Ox [singleton]
     method init( args:String[] )
       command_line = parse_args( args )
 
-      # trace command_line
+      #trace command_line
       # has //options and possibly //args
 
       if (command_line//options//help)
         print_usage
         System.exit 0
+      endIf
+
+      if (command_line//args)
+        local is_interactive = command_line//options//interactive
+        local cmd = command_line//args.to_list<<String>>.join(' ')
+        if (is_interactive) println "$> $"(command_index,cmd)
+        execute( cmd )
+        if (not is_interactive) return
       endIf
 
       repl
@@ -129,6 +137,22 @@ class Ox [singleton]
       min_stack_count .= or_smaller( stack.count )
       return result
 
+    method execute( command:String )
+      try
+        local parser = Parser( "$"(command_index), command )
+        local statements = parser.parse
+        Resolver.visit( statements )
+        min_stack_count = stack.count
+        statements.execute
+        forEach (i in min_stack_count..<stack.count)
+          stack[i].display
+        endForEach
+      catch (error:CompileError)
+        println "ERROR: " + error.message
+      endTry
+
+      ++command_index
+
     method repl
       println "0x Calculator"
       println "Commands include (h)elp and (q)uit."
@@ -157,9 +181,8 @@ class Ox [singleton]
       # This method is unrelated to the Froley Parser
       local command_line = CommandLineParser().
       [
-        option( "--flag",     &alias="-f" )
-        option( "--help",     &aliases=["-h","-?"] )
-        option( "--setting=", &alias="-s" )
+        option( "--interactive", &alias="-i" )
+        option( "--help",        &aliases=["-h","-?"] )
       ].parse( args )
       return command_line
 
